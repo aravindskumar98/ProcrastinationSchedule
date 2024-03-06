@@ -1,15 +1,25 @@
 import streamlit as st
-from datetime import datetime, timedelta
+from datetime import datetime
+import pytz
+
+# Fetch all time zones from pytz
+all_time_zones = pytz.all_timezones
+
+# Add a select box for time zone selection
+selected_time_zone = st.selectbox('Select your time zone', all_time_zones, index=all_time_zones.index('America/Los_Angeles'))
+
+# Set timezone to user's selection
+user_tz = pytz.timezone(selected_time_zone)
 
 # Initialize session state variables if they don't exist
 if 'tasks' not in st.session_state:
     st.session_state.tasks = []
 
 if 'start_time' not in st.session_state:
-    st.session_state.start_time = datetime.now()
+    st.session_state.start_time = datetime.now(user_tz)
 
-# Calculate end time as midnight of the current day
-end_time = datetime.now().replace(hour=23, minute=59, second=59, microsecond=999999)
+# Calculate end time as midnight of the current day in user selected timezone
+end_time = datetime.now(user_tz).replace(hour=23, minute=59, second=59, microsecond=999999)
 
 def add_task(task_description, time_taken):
     st.session_state.tasks.append({"task": task_description, "time_taken": time_taken, "completed": False})
@@ -44,12 +54,8 @@ for index, task in enumerate(st.session_state.tasks):
     with col4:
         st.button("Delete", key=f"delete_{index}", on_click=delete_task, args=(index,))
 
-# # Calculate remaining time
-# total_time_for_incomplete_tasks = sum(task["time_taken"] for task in st.session_state.tasks if not task["completed"])
-# remaining_time = max(0, 24 - (datetime.now() - st.session_state.start_time).seconds / 3600 - total_time_for_incomplete_tasks)
-        
-# Calculate time to midnight from start_time
-time_to_midnight = (end_time - st.session_state.start_time).seconds / 3600
+# Calculate time to midnight from start_time in PST
+time_to_midnight = (end_time - st.session_state.start_time).total_seconds() / 3600
 
 # Calculate remaining time considering incomplete tasks
 total_time_for_incomplete_tasks = sum(task["time_taken"] for task in st.session_state.tasks if not task["completed"])

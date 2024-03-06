@@ -26,7 +26,7 @@ def reopen_task(index):
 # UI for adding tasks
 st.title("You think you have time?")
 task_description = st.text_input("Task Description")
-time_taken = st.number_input("Time Taken (hours)", min_value=0.0, format="%.1f")
+time_taken = st.number_input("How long do you think it will take? (hours)", min_value=0.0, format="%.1f")
 add_task_button = st.button("Add Task", on_click=add_task, args=(task_description, time_taken))
 
 # Display tasks
